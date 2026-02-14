@@ -1,196 +1,403 @@
-# LangGraph
+# LangGraph Learning Repository
 
-Comprehensive guide and reference for the LangGraph collection of example workflows and notebooks.
+A project-focused, education-first collection of LangGraph workflows for learning by pattern.
 
-LangGraph is a hands-on collection demonstrating how to design modular, stateful, and multi-agent LLM applications using graph-based workflows. This repository groups real example notebooks across different workflow patterns — sequential, conditional, iterative, parallel — and includes examples for persistence, tools, and practical chatbot setups.
+This repository is organized as a set of practical notebooks and scripts that demonstrate how to design LLM applications using graph-based control flow:
 
----
+- Sequential workflows
+- Conditional routing
+- Iterative refinement loops
+- Parallel branches with merge
+- Persistence and time-travel style replay
+- Human-in-the-loop interrupts
+- Tool-calling agents
+- RAG with vector retrieval
+- Subgraphs and state sharing
+- MCP (Model Context Protocol) integration
+- Basic LLM memory behavior comparisons
 
-## Table of Contents
+Use this README as your revision sheet.
 
-- **Project Overview**: What this repo contains and goals
-- **Repository Structure**: Descriptions of folders and files
-- **Setup**: Python, virtual environment, and dependencies
-- **Running Notebooks**: How to open and run examples
-- **Workflow Summaries**: What each notebook demonstrates
-- **Troubleshooting**: Common issues and fixes
-- **Contributing**: How to contribute
-- **Contact & License**
+## 1. Repository Overview
 
----
+Root contents:
 
-## Project Overview
+- `README.md`: This guide.
+- `requirements.txt`: Currently empty, so dependencies must be installed manually.
+- `.env`: Local secrets (API keys). Not committed in normal workflows.
+- `islr.pdf`: Document used by the RAG notebook.
+- `venv/`: Local virtual environment folder.
 
-This repository is a curated set of Jupyter notebooks that illustrate practical LangGraph workflows and patterns for building LLM-driven applications. Each notebook is self-contained and demonstrates one or more patterns such as:
+Main learning folders:
 
-- Chatbot flows with memory and state
-- Conditional branching and decision trees
-- Iterative generation and refinement loops
-- Parallel workflows for concurrent tasks
-- Persistence strategies for storing state and results
-- Tool integration and helper utilities
+- `LangGraph Sequential WorkFlows/`
+- `LangGraph conditional WorkFlow/`
+- `LangGraph Iterative WorkFlow/`
+- `LangGraph Parallel WorkFlow/`
+- `LangGraph Persitence/`
+- `LangGraph ChatBot WorkFlow/`
+- `LangGraph Human In The Loop (HITL)/`
+- `LangGraph Tools/`
+- `LangGraph RAGS/`
+- `LangGraph SubGraph/`
+- `LangGraph MCP/`
+- `LLM Memory/`
 
-The examples are suitable for learning, prototyping, and adapting to production workflows.
+## 2. Skills You Build In This Repo
 
----
+By completing the notebooks in order, you practice:
 
-## Repository Structure
+1. Defining graph state with `TypedDict`.
+2. Writing node functions that transform state.
+3. Connecting nodes with `add_edge` for deterministic flows.
+4. Branching with `add_conditional_edges` for decision-based routing.
+5. Creating loops for iterative improvement.
+6. Running independent branches in parallel and merging outputs.
+7. Using checkpointing (`MemorySaver` / in-memory checkpointer).
+8. Building tool-enabled agents using `ToolNode` + `tools_condition`.
+9. Inserting human approval steps with `interrupt` + `Command(resume=...)`.
+10. Building modular systems using subgraphs.
+11. Adding retrieval pipelines (RAG) with vector stores.
+12. Connecting external capability servers through MCP.
 
-Top-level files:
+## 3. Detailed Folder and File Guide
 
-- `README.md`: This file — full project overview and usage.
-- `requirements.txt`: Python dependency list for running the notebooks.
+### 3.1 `LangGraph Sequential WorkFlows/`
 
-Top-level directories (each contains one or more Jupyter notebooks):
+Purpose: Understand the most basic graph pattern (linear pipelines).
 
-- `LangGraph ChatBot WorkFlow/` — `chatbot.ipynb` : Chatbot example demonstrating conversation flow, memory, and prompt handling.
-- `LangGraph conditional WorkFlow/` — `quadratic_workflow.ipynb`, `review_reply_workflow.ipynb` : Examples of conditional branching and decision logic inside LangGraph workflows.
-- `LangGraph Iterative WorkFlow/` — `post_generator_twitter.ipynb` : Iterative prompt/refinement pattern for generating social media posts.
-- `LangGraph Parallel WorkFlow/` — `batsman_workflow.ipynb`, `Upsc_essay_workflow.ipynb` : Parallel task execution patterns and aggregation of results.
-- `LangGraph Persitence/` — `persitence.ipynb` : Persistence patterns (note: folder name is spelled `Persitence` in this repo) showing state saving and retrieval strategies.
-- `LangGraph Sequential WorkFlows/` — `BMI_WorkFlow.ipynb`, `Prompt_chaining_workflow.ipynb`, `Simple_LLM_Workflow.ipynb`, `test_installation.ipynb` : Sequential pipelines and prompt chaining examples, plus an environment test notebook.
-- `LangGraph Tools/` — `tools.ipynb` : Utility examples, integrations, and tooling for building and debugging LangGraph flows.
+Files:
 
-> Note: Filenames and folder names are case-sensitive on some platforms; use the exact names shown above when opening files.
+- `LangGraph Sequential WorkFlows/test_installation.ipynb`
+  - Minimal import check (`StateGraph`) to confirm setup.
 
----
+- `LangGraph Sequential WorkFlows/Simple_LLM_Workflow.ipynb`
+  - State: question -> answer.
+  - Node: `llm_qa`.
+  - Graph shape: `START -> llm_qa -> END`.
+  - Concept: Smallest functional LangGraph + LLM example.
 
-## Setup
+- `LangGraph Sequential WorkFlows/Prompt_chaining_workflow.ipynb`
+  - Nodes: `create_outline`, `create_blog`.
+  - Graph shape: `START -> create_outline -> create_blog -> END`.
+  - Concept: Prompt chaining where output of one step feeds next step.
 
-Recommended Python environment:
+- `LangGraph Sequential WorkFlows/BMI_WorkFlow.ipynb`
+  - Nodes: `calculate_bmi`, `label_bmi`.
+  - Graph shape: `START -> calculate_bmi -> label_bmi -> END`.
+  - Concept: Pure deterministic workflow without LLM dependency.
+
+### 3.2 `LangGraph conditional WorkFlow/`
+
+Purpose: Learn branching decisions using conditional edges.
+
+Files:
+
+- `LangGraph conditional WorkFlow/quadratic_workflow.ipynb`
+  - Nodes: `show_equation`, `calculate_discriminant`, `real_roots`, `repeated_roots`, `no_real_roots`.
+  - Conditional router: `check_condition`.
+  - Concept: Traditional algorithmic branching through graph routing.
+
+- `LangGraph conditional WorkFlow/review_reply_workflow.ipynb`
+  - Nodes: `find_sentiment`, `positive_response`, `run_diagnosis`, `negative_response`.
+  - Conditional router: `check_sentiment`.
+  - Uses structured outputs with Pydantic schemas.
+  - Concept: LLM-based classification followed by route-specific response logic.
+
+### 3.3 `LangGraph Iterative WorkFlow/`
+
+Purpose: Build evaluation-improvement loops.
+
+Files:
+
+- `LangGraph Iterative WorkFlow/post_generator_twitter.ipynb`
+  - Nodes: `generate_tweet`, `evaluate_tweet`, `optimize_tweet`.
+  - Conditional loop router: `route_evaluation`.
+  - Loop behavior: keeps optimizing until evaluation becomes `approved`.
+  - Concept: Self-refining generation workflow.
+
+### 3.4 `LangGraph Parallel WorkFlow/`
+
+Purpose: Run independent analysis branches concurrently and aggregate.
+
+Files:
+
+- `LangGraph Parallel WorkFlow/batsman_workflow.ipynb`
+  - Parallel nodes: `calculate_sr`, `calculate_bpb`, `calculate_boundary_percent`.
+  - Merge node: `summary`.
+  - Concept: Multi-metric computation in parallel.
+
+- `LangGraph Parallel WorkFlow/Upsc_essay_workflow.ipynb`
+  - Parallel evaluators: language, analysis, thought.
+  - Merge node: `final_evaluation`.
+  - Uses structured outputs via Pydantic.
+  - Concept: Multi-dimensional grading pipeline.
+
+### 3.5 `LangGraph ChatBot WorkFlow/`
+
+Purpose: Stateful chatbot baseline with memory/checkpointing.
+
+Files:
+
+- `LangGraph ChatBot WorkFlow/chatbot.ipynb`
+  - State: message history with `add_messages`.
+  - Node: `chat_node`.
+  - Checkpointer: `MemorySaver`.
+  - Concept: conversational state graph with thread-based continuity.
+
+### 3.6 `LangGraph Persitence/` (folder name intentionally as in repo)
+
+Purpose: Persist workflow state and revisit conversation progress.
+
+Files:
+
+- `LangGraph Persitence/persitence.ipynb`
+  - Nodes: `generate_joke`, `generate_explanation`.
+  - Checkpointer enabled at compile-time.
+  - Concept: workflow persistence and replay-style behavior.
+
+### 3.7 `LangGraph Human In The Loop (HITL)/`
+
+Purpose: Add explicit human approval in graph execution.
+
+Files:
+
+- `LangGraph Human In The Loop (HITL)/01_hitl.ipynb`
+  - Uses `interrupt` and `Command(resume=...)`.
+  - Concept: pausing workflow for human decision before continuing.
+
+- `LangGraph Human In The Loop (HITL)/chatbot_without_hitl.py`
+  - Tool-enabled stock assistant.
+  - Tools: `get_stock_price`, `purchase_stock` (mock auto-success).
+  - Graph: `chat_node <-> tools` loop using `tools_condition`.
+
+- `LangGraph Human In The Loop (HITL)/chatbot_with_hitl.py`
+  - Same stock assistant but `purchase_stock` triggers `interrupt` for approval.
+  - Concept: practical comparison between autonomous and approval-gated flows.
+
+### 3.8 `LangGraph Tools/`
+
+Purpose: Tool-calling agent design with external APIs.
+
+Files:
+
+- `LangGraph Tools/tools.ipynb`
+  - Tools include calculator + stock API + DuckDuckGo search.
+  - Uses `ToolNode`, `@tool`, and `tools_condition` routing.
+  - Concept: LLM decides when to call tools and returns synthesized final answer.
+
+### 3.9 `LangGraph RAGS/`
+
+Purpose: Retrieval-Augmented Generation with LangGraph tool routing.
+
+Files:
+
+- `LangGraph RAGS/langGraph_rag.ipynb`
+  - Loads PDF via `PyPDFLoader`.
+  - Splits text with `RecursiveCharacterTextSplitter`.
+  - Builds FAISS vector store + retriever.
+  - Exposes retrieval as a tool in graph (`ToolNode`).
+  - Concept: agentic RAG where graph decides retrieval usage.
+
+### 3.10 `LangGraph SubGraph/`
+
+Purpose: Modular graph design and parent-child workflow composition.
+
+Files:
+
+- `LangGraph SubGraph/basic_approch.ipynb`
+  - Basic two-step answer -> translation flow.
+
+- `LangGraph SubGraph/subgraph.ipynb`
+  - Explicit subgraph creation with parent graph integration.
+
+- `LangGraph SubGraph/subgraph_sharestate.ipynb`
+  - Subgraph with shared state handling.
+
+Core concept in all three:
+
+- Build reusable sub-pipelines and compose them into larger systems.
+
+### 3.11 `LangGraph MCP/`
+
+Purpose: Connect LangGraph agents to MCP servers.
+
+Files:
+
+- `LangGraph MCP/chatbot_async.py`
+  - Async tool-enabled graph with local tools.
+  - Tools: calculator, stock fetch, DuckDuckGo search.
+  - Uses Gemini model and async invocation.
+
+- `LangGraph MCP/chatbot_mcp.py`
+  - Uses `MultiServerMCPClient`.
+  - Connects to:
+    - local stdio MCP server (`uv run ... fastmcp ...`)
+    - remote streamable HTTP MCP server.
+  - Dynamically loads MCP tools and binds them to LLM.
+  - Concept: external capability extension through MCP protocol.
+
+### 3.12 `LLM Memory/`
+
+Purpose: Demonstrate short-term memory behavior difference.
+
+Files:
+
+- `LLM Memory/example1_no_STM.ipynb`
+  - Direct separate prompts with no explicit conversation list.
+  - Concept: memory loss across isolated calls.
+
+- `LLM Memory/example2_STM.ipynb`
+  - Manual message list maintained across turns.
+  - Concept: preserving context by carrying conversation history.
+
+## 4. Common Graph Architecture Used Across Repo
+
+Most agentic notebooks/scripts follow this recurring architecture:
+
+1. Define `State` (`TypedDict`, sometimes with `Annotated` reducers).
+2. Initialize LLM(s) and optional tools.
+3. Build nodes (plain Python functions).
+4. Register nodes with `StateGraph(...)`.
+5. Add deterministic and/or conditional edges.
+6. Compile graph (optionally with checkpointer).
+7. Invoke graph with initial state.
+
+Typical tool-agent pattern:
+
+- `START -> chat_node`
+- conditional routing from `chat_node` via `tools_condition`
+- `tools -> chat_node` loop
+- terminate when model emits non-tool response
+
+## 5. Setup and Installation
+
+### 5.1 Python version
+
+Recommended:
 
 - Python 3.10 or 3.11
 
-Quick setup (PowerShell):
+### 5.2 Virtual environment (PowerShell)
 
 ```powershell
-# create and activate a virtual environment (PowerShell)
-python -m venv .venv; .\.venv\Scripts\Activate.ps1
-
-# upgrade pip and install dependencies
-python -m pip install --upgrade pip; pip install -r requirements.txt
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 ```
 
-If some notebooks require extra packages not present in `requirements.txt`, install them individually. For example, during development the following packages were used and may be helpful:
+### 5.3 Install dependencies
+
+`requirements.txt` is currently empty, so install manually:
 
 ```powershell
-pip install langchain_community ddgs
+pip install langgraph langchain langchain-core langchain-community langchain-google-genai langchain-huggingface langchain-mcp-adapters langchain-text-splitters faiss-cpu pydantic python-dotenv requests jupyter
 ```
 
----
-
-## Running Notebooks
-
-Open the repository in VS Code or launch Jupyter Notebook / Jupyter Lab from the repo root:
+If you run MCP examples:
 
 ```powershell
-# start Jupyter Lab (recommended)
+pip install uv fastmcp
+```
+
+## 6. Environment Variables
+
+Create/update `.env` with the keys your notebooks/scripts use.
+
+Likely required (based on imports/models):
+
+- `GOOGLE_API_KEY` for Gemini (`ChatGoogleGenerativeAI`)
+- `HUGGINGFACEHUB_API_TOKEN` for `HuggingFaceEndpoint`
+- Optional provider keys depending on experiments
+
+Notes:
+
+- Some files include Alpha Vantage API key directly in source; move this to env variables for safety.
+- Never commit real secrets.
+
+## 7. How To Run
+
+### 7.1 Run notebooks
+
+```powershell
 jupyter lab
-
-# or classic notebook UI
-jupyter notebook
 ```
 
-Then open any of the notebooks inside the folders listed under **Repository Structure**.
+Then execute notebooks in this recommended order:
 
-Tips:
+1. `LangGraph Sequential WorkFlows/test_installation.ipynb`
+2. `LangGraph Sequential WorkFlows/Simple_LLM_Workflow.ipynb`
+3. `LangGraph Sequential WorkFlows/Prompt_chaining_workflow.ipynb`
+4. `LangGraph conditional WorkFlow/quadratic_workflow.ipynb`
+5. `LangGraph conditional WorkFlow/review_reply_workflow.ipynb`
+6. `LangGraph Iterative WorkFlow/post_generator_twitter.ipynb`
+7. `LangGraph Parallel WorkFlow/batsman_workflow.ipynb`
+8. `LangGraph Parallel WorkFlow/Upsc_essay_workflow.ipynb`
+9. `LangGraph Persitence/persitence.ipynb`
+10. `LangGraph ChatBot WorkFlow/chatbot.ipynb`
+11. `LangGraph Tools/tools.ipynb`
+12. `LangGraph RAGS/langGraph_rag.ipynb`
+13. `LangGraph Human In The Loop (HITL)/01_hitl.ipynb`
+14. `LangGraph SubGraph/basic_approch.ipynb`
+15. `LangGraph SubGraph/subgraph.ipynb`
+16. `LangGraph SubGraph/subgraph_sharestate.ipynb`
+17. `LLM Memory/example1_no_STM.ipynb`
+18. `LLM Memory/example2_STM.ipynb`
 
-- Use the `test_installation.ipynb` in `LangGraph Sequential WorkFlows/` to verify kernel and dependencies.
-- If you hit import errors, ensure your virtual environment is activated and the kernel in Jupyter matches `.venv`'s Python interpreter.
+### 7.2 Run Python scripts
 
----
+```powershell
+python "LangGraph Human In The Loop (HITL)\chatbot_without_hitl.py"
+python "LangGraph Human In The Loop (HITL)\chatbot_with_hitl.py"
+python "LangGraph MCP\chatbot_async.py"
+python "LangGraph MCP\chatbot_mcp.py"
+```
 
-## Workflow Summaries (what each notebook demonstrates)
+## 8. Revision Notes (Exam-Style)
 
-- `LangGraph ChatBot WorkFlow/chatbot.ipynb`:
+Use this checklist while revising:
 
-  - Demonstrates building a stateful conversational agent, handling user messages, and persisting short-term memory during a session.
+- Can I explain state design and reducers (`add_messages`)?
+- Can I draw graph topology for each pattern type?
+- Can I implement conditional routing from scratch?
+- Can I build an iterative loop with exit conditions?
+- Can I combine parallel branches and aggregate safely?
+- Can I add checkpointing and thread-based continuation?
+- Can I insert human approval with `interrupt`/`resume`?
+- Can I convert a retriever into a callable tool for agentic RAG?
+- Can I separate logic into subgraphs and compose parent flow?
+- Can I reason about tool safety (network calls, API keys, errors)?
 
-- `LangGraph conditional WorkFlow/quadratic_workflow.ipynb`:
+## 9. Known Gaps and Improvements
 
-  - An example of branching logic based on inputs and intermediate results (e.g., choose different processing paths depending on data).
+Current repository gaps:
 
-- `LangGraph conditional WorkFlow/review_reply_workflow.ipynb`:
+- `requirements.txt` is empty.
+- Folder/file spelling variants (`Persitence`, `approch`) may confuse automation.
+- API key for Alpha Vantage appears hardcoded in scripts.
+- Some notebooks have no markdown explanation cells.
 
-  - Shows conditional reply generation for reviews and decision rules that change the prompt path.
+Recommended improvements:
 
-- `LangGraph Iterative WorkFlow/post_generator_twitter.ipynb`:
+1. Populate `requirements.txt` with pinned versions.
+2. Add short markdown intro/output expectations to each notebook.
+3. Move all secret keys to `.env` only.
+4. Add one small `tests/` folder for deterministic graph examples.
+5. Add architecture diagrams (Mermaid) per workflow category.
 
-  - Iterative prompt refinement: generate drafts, evaluate, and refine until quality threshold is met.
+## 10. Quick Start (Short Version)
 
-- `LangGraph Parallel WorkFlow/batsman_workflow.ipynb` and `Upsc_essay_workflow.ipynb`:
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install --upgrade pip
+pip install langgraph langchain langchain-core langchain-community langchain-google-genai langchain-huggingface langchain-mcp-adapters langchain-text-splitters faiss-cpu pydantic python-dotenv requests jupyter
+jupyter lab
+```
 
-  - Parallelize sub-tasks (e.g., multiple prompt calls or summarization tasks) and then aggregate results.
+Then start with:
 
-- `LangGraph Persitence/persitence.ipynb`:
+- `LangGraph Sequential WorkFlows/test_installation.ipynb`
+- `LangGraph Sequential WorkFlows/Simple_LLM_Workflow.ipynb`
 
-  - Patterns for saving workflow outputs and agent state to disk or external stores (note: folder name spelled `Persitence`).
-
-- `LangGraph Sequential WorkFlows/*`:
-
-  - `BMI_WorkFlow.ipynb`: simple sequential pipeline to compute BMI and provide recommendations.
-  - `Prompt_chaining_workflow.ipynb`: prompt chaining examples to build complex behaviors from small prompt steps.
-  - `Simple_LLM_Workflow.ipynb`: minimal end-to-end example to show the skeleton of a LangGraph workflow.
-  - `test_installation.ipynb`: environment and dependency checks.
-
-- `LangGraph Tools/tools.ipynb`:
-  - Helper utilities, debugging patterns, and small tools that support the workflows (e.g., prompt templates, validators).
-
-Each notebook usually contains:
-
-- Problem statement and expected input/output
-- Setup cell to install/import required libs
-- Step-by-step LangGraph node construction or pseudo-code
-- Example runs and inspection of results
-
----
-
-## Troubleshooting
-
-- Kernel mismatch / imports not found: ensure the Jupyter kernel points to the activated `.venv` interpreter.
-- Long-running prompts or rate limits: add retries and backoff in notebook cells when calling external LLM APIs.
-- Path or filename errors on Windows: watch for spaces in folder names and escape paths or use quotes when running commands.
-
-If you need help reproducing an error, open an issue with the notebook name, the error traceback, and your Python version.
-
----
-
-## Contributing
-
-Contributions are welcome. Suggested workflow:
-
-1. Fork the repo and create a branch for your changes.
-2. Add or update a notebook demonstrating a new pattern or fix.
-3. Update `requirements.txt` if you add new dependencies.
-4. Open a pull request with a clear description and mention which notebook(s) you changed.
-
-Guidelines:
-
-- Keep notebooks focused and reproducible: include necessary install/import cells and short README notes inside the notebook.
-- Avoid committing large binary outputs; clear large outputs before committing.
-
----
-
-## Contact
-
-If you have questions or want to collaborate, open an issue or reach out to the repository owner.
-
----
-
-## License
-
-Specify your license here if you have one (e.g., MIT, Apache-2.0) — add a `LICENSE` file at the repo root if desired.
-
----
-
-## Quick Start Checklist
-
-- [ ] Create and activate a Python virtual environment
-- [ ] Install dependencies: `pip install -r requirements.txt`
-- [ ] Launch `jupyter lab` and run `test_installation.ipynb`
-- [ ] Open the workflow notebook of interest and run the cells sequentially
-
-Enjoy exploring LangGraph workflows! If you'd like, I can also:
-
-- Add short READMEs inside each folder summarizing the notebook(s)
-- Create a small runnable example script that executes one of the notebooks programmatically
+That gives you the base needed for all advanced folders.
